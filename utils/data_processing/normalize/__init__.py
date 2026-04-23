@@ -1,0 +1,1 @@
+from methods import minmax, z_score
