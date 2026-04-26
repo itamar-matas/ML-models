@@ -1,1 +1,1 @@
-from methods import minmax, z_score
+from .methods import minmax, z_score

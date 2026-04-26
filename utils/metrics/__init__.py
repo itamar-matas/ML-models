@@ -1,2 +1,1 @@
-from scores import accuracy_score
-from visuals import confusion_matrix
+from .scores import accuracy_score, confusion_matrix

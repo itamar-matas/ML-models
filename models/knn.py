@@ -1,5 +1,6 @@
 import numpy as np
-from utils.math.distances import L2
+import pandas as pd
+from utils.math import L2
 
 class KNN:
     def __init__(self, k: int, distance_func=L2, voting_weight=None) -> None:
@@ -12,9 +13,12 @@ class KNN:
         self._X_train = None
         self._Y_train = None
 
-    def fit(self, X: np.ndarray, Y: np.ndarray, feature_weights=None) -> None:
-        self._X_train = np.atleast_2d(np.asanyarray(X))
-        self._Y_train = np.asanyarray(Y).flatten()
+    def fit(self, X: pd.DataFrame | np.ndarray, Y: pd.DataFrame | np.ndarray, feature_weights=None) -> None:
+        self._X_train = np.array(X)
+        self._Y_train = np.array(Y).flatten()
+
+        if self._X_train.ndim == 1: 
+            self._X_train = self._X_train.reshape(1, -1)
 
         if self._X_train.shape[0] != self._Y_train.size or self._X_train.ndim != 2:
             raise ValueError("Dataset shape mismatch")
@@ -30,8 +34,11 @@ class KNN:
             
             self._X_train = self._X_train * self._feature_weights
 
-    def predict(self, X_query: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        X_query = np.atleast_2d(np.asanyarray(X_query))
+    def predict(self, X_query: pd.DataFrame | np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+        X_query = np.array(X_query)
+
+        if X_query.ndim == 1: 
+            X_query = X_query.reshape(1, -1)
         
         if self._feature_weights is not None:
             X_query = X_query * self._feature_weights
