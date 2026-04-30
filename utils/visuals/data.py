@@ -1,51 +1,65 @@
 import matplotlib.pyplot as plt
-import numpy as np
+import seaborn as sns
 import pandas as pd
+import numpy as np
 
-from typing import Callable
+from .styles import color_maps
+
 from itertools import combinations
+from typing import Callable, List
+from math import ceil
 
-def plot_feature_relationships(data: pd.DataFrame | np.ndarray, target: pd.Series | np.ndarray | str = None, features: list[str] | None = None, layout: tuple[int, int] = None, inverse_transform: Callable | None = None) -> None:
-
-    if isinstance(data, pd.DataFrame):
-        features = list(data.columns)
-
-    elif isinstance(data, np.ndarray) and features is not None:
-        data = pd.DataFrame(data, columns=features)
+def plot_feature_relationships(data: pd.DataFrame | np.ndarray, target: pd.Series | np.ndarray | str = None, features: List[str] | None = None, n_columns: int = 3, inverse_transform: Callable | None = None) -> None:
+    if isinstance(data, np.ndarray):
+        cols = features if features is not None else [f'feature {i}' for i in range(data.shape[1])]
+        df = pd.DataFrame(data, columns=cols)
 
     else:
-        data = pd.DataFrame(data, columns=[f'feature {i}' for i in range(data.shape[1])])
-        
+        df = data.copy()
+
     if isinstance(target, str):
-        target_values = data[target]
-        data = data.drop(columns=[target])
-        target = target_values
+        target_series = df[target].copy()
+        df = df.drop(columns=[target])
 
+    elif isinstance(target, (np.ndarray, pd.Series)):
+        target_series = pd.Series(target).copy()
+        target_series.name = 'target'
 
-    labels = np.unique(target)
+    elif target is None:
+        target_series = pd.Series([0] * len(df), name='target')
+
+    else:
+        target_series = target.copy()
+
     if inverse_transform is not None:
-        labels = inverse_transform(labels)
-    
-    pairs = list(combinations(data.columns, 2))
-    if layout is None:
-        layout = (data.columns.size // 2, data.columns.size + data.columns.size % 2 - 1)
-    
-    cmap = plt.get_cmap('viridis', labels.size)
-    fig, axes = plt.subplots(layout[0], layout[1], figsize=(18, 10))
-    axes_flat = axes.flatten()
+        target_series = pd.Series(inverse_transform(target_series.values), index=target_series.index, name=target_series.name)
 
+    plot_df = pd.concat([df, target_series], axis=1)
+    pairs = list(combinations(df.columns, 2))
+    n_categories = target_series.nunique()
+    
+    if not pairs:
+        return
+    
+    n_columns = min(n_columns, len(pairs))
+    layout = (ceil(len(pairs) / n_columns), n_columns)
+    
+    fig, axes = plt.subplots(layout[0], layout[1], figsize=(5 * layout[1], 4 * layout[0]))
+    axes_flat = np.array(axes).flatten()
 
     for i, (feat1, feat2) in enumerate(pairs):
         ax = axes_flat[i]
-    
-        ax.scatter(data[feat1], data[feat2], c=target, cmap=cmap, edgecolors='k', alpha=0.8)
 
-        ax.set_xlabel(feat1, c="grey")
-        ax.set_ylabel(feat2, c="grey")
+        sns.scatterplot(data=plot_df, x=feat1, y=feat2, hue=target_series.name, ax=ax, palette=color_maps.categorical(n_categories), alpha=0.8, edgecolor='k')
         ax.set_title(f'{feat1} vs {feat2}')
 
-    handles = [plt.Line2D([0], [0], marker='o', color='w', markerfacecolor=cmap(i), markersize=10, label=labels[i]) for i in range(labels.size)]
-    fig.legend(handles=handles, loc='upper right', bbox_to_anchor=(1.05, 1))
+        if ax.get_legend():
+            ax.get_legend().remove()
 
-    plt.tight_layout()
+    handles, labels = axes_flat[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='upper right', title=target_series.name, bbox_to_anchor=(1.1, 1), borderaxespad=0.5)
+
+    for j in range(len(pairs), len(axes_flat)):
+        axes_flat[j].set_visible(False)
+
     plt.show()
