@@ -1,9 +1,14 @@
 import numpy as np
 import pandas as pd
+
+from .base import BaseModel
+
 from utils.math import L2
 
-class KNN:
+class KNN(BaseModel):
     def __init__(self, k: int, distance_func=L2, voting_weight=None) -> None:
+        super().__init__()
+        
         self._k = k
 
         self._dist = distance_func
@@ -13,7 +18,7 @@ class KNN:
         self._X_train = None
         self._Y_train = None
 
-    def fit(self, X: pd.DataFrame | np.ndarray, Y: pd.DataFrame | np.ndarray, feature_weights=None) -> None:
+    def fit(self, X, Y, feature_weights=None) -> None:
         self._X_train = np.array(X)
         self._Y_train = np.array(Y).flatten()
 
@@ -34,7 +39,7 @@ class KNN:
             
             self._X_train = self._X_train * self._feature_weights
 
-    def predict(self, X_query: pd.DataFrame | np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def predict(self, X_query) -> tuple[np.ndarray, np.ndarray]:
         X_query = np.array(X_query)
 
         if X_query.ndim == 1: 

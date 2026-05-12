@@ -9,9 +9,9 @@ from itertools import combinations
 from typing import Callable, List
 from math import ceil
 
-def plot_feature_relationships(data: pd.DataFrame | np.ndarray, target: pd.Series | np.ndarray | str = None, features: List[str] | None = None, n_columns: int = 3, inverse_transform: Callable | None = None) -> None:
+def plot_feature_relationships(data: pd.DataFrame | np.ndarray, target: pd.Series | np.ndarray | str = None, feature_labels: List[str] | None = None, n_columns: int = 3, inverse_transform: Callable | None = None) -> None:
     if isinstance(data, np.ndarray):
-        cols = features if features is not None else [f'feature {i}' for i in range(data.shape[1])]
+        cols = feature_labels if feature_labels is not None else [f'feature {i}' for i in range(data.shape[1])]
         df = pd.DataFrame(data, columns=cols)
 
     else:

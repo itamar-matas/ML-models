@@ -1,7 +1,7 @@
 import numpy as np
     
-def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray) -> float: 
-    return np.mean(y_pred == y_true)
+def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray, ndigits: int = 4) -> float: 
+    return np.round(np.mean(y_pred == y_true), ndigits)
 
 def confusion_matrix(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray: 
     classes = sorted(np.unique(y_true))
