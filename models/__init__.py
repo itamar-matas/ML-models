@@ -1,3 +1,3 @@
-from .knn import KNN
-from .decisiontree import DecisionTree
-from .naivebayes import NaiveBayes
+from .knn import KNNClassifier
+from .decisiontree import DecisionTreeClassifier
+from .naivebayes import NaiveBayesClassifier

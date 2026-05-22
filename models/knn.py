@@ -1,11 +1,10 @@
 import numpy as np
 import pandas as pd
 
-from .base import BaseModel
+from core.base import BaseModel
+from core.utils import L2
 
-from utils.math import L2
-
-class KNN(BaseModel):
+class KNNClassifier(BaseModel):
     def __init__(self, k: int, distance_func=L2, voting_weight=None) -> None:
         super().__init__()
         

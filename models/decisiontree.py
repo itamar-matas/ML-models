@@ -2,13 +2,13 @@ import numpy as np
 import pandas as pd
 
 from typing import Dict, List
-from .base import BaseModel
+from core.base import BaseModel
 
-from utils.math import entropy, information_gain
+from core.utils import entropy, information_gain
 
 
 #ID3 - only base desion tree for the moment, only categorical features.
-class DecisionTree(BaseModel):
+class DecisionTreeClassifier(BaseModel):
     def __init__(self, max_depth: int | None = None, min_split: int = 2, min_gain: float = 1e-4) -> None:
         super().__init__()
 

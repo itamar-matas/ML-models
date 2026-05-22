@@ -25,8 +25,8 @@ def plot_confusion_matrices(matrices: np.ndarray, labels: List[str], n_columns: 
     
         sns.heatmap(mat.astype(int), annot=True, fmt='d', cmap=color_maps.purples(), xticklabels=labels, yticklabels=labels, ax=ax, cbar=False)
 
-        ax.set_xlabel('Actual', fontsize=14)
-        ax.set_ylabel('Predicted', fontsize=14)
+        ax.set_xlabel('Predicted', fontsize=14)
+        ax.set_ylabel('Actual', fontsize=14)
         ax.set_title(titling(i), fontsize=16)
 
     for j in range(len(matrices), len(axes)):

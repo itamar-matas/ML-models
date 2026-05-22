@@ -40,7 +40,7 @@ def discrete_likelihood(X: np.ndarray, Y: np.ndarray, num_classes: int | None = 
     probabilities = []
     for i in range(n_features):
         feature_col = X[:, i]
-        n_cat = num_categories[i] if num_categories is not None else len(np.unique(feature_col))
+        n_cat = num_categories[i] if num_categories is not None else int(np.max(feature_col)) + 1
 
         contingency_matrix = contingency_table(feature_col.flatten(), Y, num_classes=n_classes, num_categories=n_cat)
         col_sums = contingency_matrix.sum(axis=0)
