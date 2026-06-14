@@ -1,85 +1,80 @@
 import numpy as np
-import pandas as pd
 
-from core.base import BaseModel
+from typing import Callable
+from numpy.typing import ArrayLike
+
+from core.base import BaseEstimator, ClassifierScoreMixin
 from core.utils import L2
 
-class KNNClassifier(BaseModel):
-    def __init__(self, k: int, distance_func=L2, voting_weight=None) -> None:
+class KNNClassifier(BaseEstimator, ClassifierScoreMixin):
+    def __init__(self, k: int = 5, distance_func: Callable = L2, voting_weight: Callable | None = None) -> None:
         super().__init__()
         
-        self._k = k
+        self.k = k
+        self.distance_func = distance_func
+        self.voting_weight = voting_weight
 
-        self._dist = distance_func
-        self._voting_weight = voting_weight
         self._feature_weights = None
+        self._classes = None
 
         self._X_train = None
         self._Y_train = None
 
-    def fit(self, X, Y, feature_weights=None) -> None:
-        self._X_train = np.array(X)
-        self._Y_train = np.array(Y).flatten()
+    def fit(self, X: ArrayLike, Y: ArrayLike, feature_weights: ArrayLike | None = None) -> None:
+        self._X_train = np.atleast_2d(np.asarray(X))
+        self._Y_train = np.asarray(Y).ravel()
 
-        if self._X_train.ndim == 1: 
-            self._X_train = self._X_train.reshape(1, -1)
-
-        if self._X_train.shape[0] != self._Y_train.size or self._X_train.ndim != 2:
+        if self._X_train.shape[0] != self._Y_train.size:
             raise ValueError("Dataset shape mismatch")
         
         if feature_weights is not None:
-            self._feature_weights = np.asanyarray(feature_weights)
+            self._feature_weights = np.asarray(feature_weights)
 
             if self._feature_weights.ndim != 1: 
-                raise ValueError("feature_weights must be a 1D vector")
+                raise ValueError("feature_weights must be a 1D array")
         
             if self._feature_weights.size != self._X_train.shape[1]: 
                 raise ValueError("feature_weights must contain the weight of each feature")
             
             self._X_train = self._X_train * self._feature_weights
 
-    def predict(self, X_query) -> tuple[np.ndarray, np.ndarray]:
-        X_query = np.array(X_query)
+        self._classes = np.unique(self._Y_train)
 
-        if X_query.ndim == 1: 
-            X_query = X_query.reshape(1, -1)
+    def predict(self, X: ArrayLike) -> np.ndarray:
+        return self.predict_proba(X).argmax(axis=1)   
+
+    def predict_proba(self, X: ArrayLike) -> np.ndarray:
+        x = np.atleast_2d(np.asarray(X))
         
         if self._feature_weights is not None:
-            X_query = X_query * self._feature_weights
+            x = x * self._feature_weights
 
-        preds, confs = [], []
-        for x in X_query:
-            distances = self._dist(self._X_train, x)
-            knn_idx = distances.argpartition(self._k)[:self._k]
+        probs = np.empty(shape=(x.shape[0], self._classes.size))
+        for i, sample in enumerate(x):
+            distances = self.distance_func(self._X_train, sample)
+            knn_idx = distances.argpartition(self.k)[:self.k]
 
-            if self._voting_weight is not None:
-                weights = self._voting_weight(distances[knn_idx])
+            if self.voting_weight is not None:
+                weights = self.voting_weight(distances[knn_idx])
             else:
                 weights = None
             
-            label, confidence = self._vote(self._Y_train[knn_idx], weights)
-            preds.append(label)
-            confs.append(confidence)
+            prob = self._vote(self._Y_train[knn_idx], weights)
+            probs[i] = prob
         
-        return np.array(preds), np.array(confs)   
+        return probs
 
-    def _vote(self, labels, weights=None):
+    def _vote(self, labels, weights=None):    
+        nearest_neighbors, counts = np.unique(labels, return_counts=True)
+        probs = np.zeros(self._classes.size)
+        
         if weights is None:
-            classes, counts = np.unique(labels, return_counts=True)
-            winner_idx = counts.argmax()
-
-            confidence = counts[winner_idx] / self._k
-            return classes[winner_idx], confidence
+            probs[nearest_neighbors] = counts
+            return probs / self.k
         
         else:
-            unique_classes = np.unique(labels)
-            scores = {}
-        
-            for cls in unique_classes:
-                cls_weights = weights[labels == cls]
-                scores[cls] = np.sum(cls_weights)
-        
-            winner = max(scores, key=scores.get)
-            confidence = scores[winner] / np.sum(weights)
+            for n in nearest_neighbors:
+                probs[n] = np.sum(weights[labels == n])
 
-            return winner, confidence
+            return probs / np.sum(weights)
+    

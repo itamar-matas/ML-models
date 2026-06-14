@@ -29,22 +29,6 @@ def train_valid_test_split(X: ArrayLike, Y: ArrayLike, ratio: tuple[float, float
         y[indices[0]], y[indices[1]], y[indices[2]]
     )
 
-def _split_indices(length: int, splits: np.ndarray | int, shuffle: bool, RS: int | None):
-    indices = np.arange(length)
-
-    if shuffle:
-        rng = np.random.default_rng(seed=RS)
-        rng.shuffle(indices)
-
-    return np.split(indices, splits)
-
-def _check_xy(x: np.ndarray, y: np.ndarray) -> None:
-    if x.ndim > 2:
-        raise ValueError("X must be 2D")
-    
-    if x.shape[0] != y.size:
-        raise ValueError("X and y must have the same number of samples")
-    
 class kFolds:
     def __init__(self, k: int = 5, shuffle: bool = True, random_state: int | None = None):
         self._k = k
@@ -67,3 +51,21 @@ class kFolds:
 
         
     def get_k_splits(self) -> int: return self._k
+
+
+def _split_indices(length: int, splits: np.ndarray | int, shuffle: bool, RS: int | None):
+    indices = np.arange(length)
+
+    if shuffle:
+        rng = np.random.default_rng(seed=RS)
+        rng.shuffle(indices)
+
+    return np.split(indices, splits)
+
+def _check_xy(x: np.ndarray, y: np.ndarray) -> None:
+    if x.ndim > 2:
+        raise ValueError("X must be 2D")
+    
+    if x.shape[0] != y.size:
+        raise ValueError("X and y must have the same number of samples")
+    

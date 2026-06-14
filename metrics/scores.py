@@ -3,8 +3,8 @@ import sys
     
 _eps = sys.float_info.epsilon
 
-def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray, ndigits: int = 4) -> float: 
-    return np.round(np.mean(y_pred == y_true), ndigits)
+def accuracy_score(y_true: np.ndarray, y_pred: np.ndarray) -> float: 
+    return np.mean(y_pred == y_true)
 
 def confusion_matrix(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray: 
     classes = np.unique(np.concatenate([y_true, y_pred]))
@@ -18,19 +18,31 @@ def confusion_matrix(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
 
     return conf_mat
 
-def recall(y_true: np.ndarray, y_pred: np.ndarray, ndigits: int = 4) -> np.ndarray:
+def recall(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
     cm = confusion_matrix(y_true, y_pred)
-    return np.round(cm.diagonal() / (cm.sum(axis=1) + _eps), ndigits)
+    return np.mean(cm.diagonal() / (cm.sum(axis=1) + _eps))
 
-
-def precision(y_true: np.ndarray, y_pred: np.ndarray, ndigits: int = 4) -> np.ndarray:
+def precision(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
     cm = confusion_matrix(y_true, y_pred)
-    return np.round(cm.diagonal() / (cm.sum(axis=0) + _eps), ndigits)
+    return np.mean(cm.diagonal() / (cm.sum(axis=0) + _eps))
 
-def F1_score(y_true: np.ndarray, y_pred: np.ndarray, ndigits: int = 4) -> np.ndarray:
+def F1_score(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
     cm = confusion_matrix(y_true, y_pred)
 
-    recl = np.round(cm.diagonal() / (cm.sum(axis=1) + _eps), ndigits)
-    prec = np.round(cm.diagonal() / (cm.sum(axis=0) + _eps), ndigits)
+    recl = cm.diagonal() / (cm.sum(axis=1) + _eps),
+    prec = cm.diagonal() / (cm.sum(axis=0) + _eps)
 
-    return round(2 * prec * recl / (prec + recl + _eps), ndigits)
+    return np.mean(2 * prec * recl / (prec + recl + _eps))
+
+def mean_confidence(probability_table: np.ndarray) -> np.ndarray:
+    ret = np.zeros(probability_table.shape[1])
+
+    predictions = probability_table.argmax(axis=1)
+    confidences = probability_table[predictions]
+    
+    for cls in range(probability_table.shape[1]):
+        cls_mask = (predictions == cls)
+        
+        ret[cls] = confidences[cls_mask].mean() if np.any(cls_mask) else 0.0
+            
+    return ret
