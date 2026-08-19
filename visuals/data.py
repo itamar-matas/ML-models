@@ -75,16 +75,14 @@ def plot_class_distribution(target: ArrayLike, figsize=(6, 4), inverse_transform
 
     top10 = pd.DataFrame({
         "class": classes,
-        "top": [i+1 for i in range(classes.size)],
         "count": counts.values,
         "percentage": 100 / series.shape[0] * counts.values
     })
 
     fig = plt.figure(figsize=figsize, constrained_layout=True)
 
-    if   chart == 'bars':      _top10count(top10, series.size)
-    elif chart == 'pie':       _top10pie(top10, fig)
-    elif chart == 'cumulative': _top10cumdistribution(top10, series.size)
+    if   chart == 'bars': _top10count(top10, series.size)
+    elif chart == 'pie':  _top10pie(top10, fig)
 
     else: raise ValueError("not included") 
 
@@ -129,36 +127,6 @@ def _top10pie(top10: pd.DataFrame, fig):
     
     ax_leg.axis("off")
     ax_leg.legend(wedges, df["class"], loc="upper right")
-    
-def _top10cumdistribution(top10: pd.DataFrame, num_samples: int):
-    df = top10.copy()
-    df["cumpercentage"] = (df["count"] / num_samples * 100).cumsum()
-
-    top10_percentage = df["percentage"].sum()
-
-    if top10_percentage < 99.99:
-        df.loc[df.shape[0]] = pd.Series({
-            "top": df.shape[0] + 1,
-            "percentage": 100 - top10_percentage,
-            "cumpercentage": 100
-        })
-
-    sns.lineplot(x=df["top"], y=df["cumpercentage"], marker='o', markeredgewidth=0, color=Theme.main())
-    
-    plt.xticks(df["top"], [str(t) if t != 11 else "All" for t in df["top"].values.astype(int)])
-    plt.fill_between(df["top"], df["cumpercentage"], color=Theme.main(), alpha=0.3)
-    
-    plt.xlabel("Top-10 Classes")
-    plt.ylabel("Cumulative Percentage (%)")
-
-    for i, (cp, c) in enumerate(zip(df["cumpercentage"], df["count"])):
-        plt.annotate(
-            f"{round(cp,1)}%",
-            (i+1, cp),
-            xytext=(0,8),
-            textcoords="offset points",
-            ha="center"
-        )
 
 def _top10count(top10: pd.DataFrame, num_samples: int):
     df = top10.copy()
@@ -171,8 +139,8 @@ def _top10count(top10: pd.DataFrame, num_samples: int):
             "count": num_samples - df["count"].sum() 
         })
 
-    sns.barplot(x=df["class"], y=df["count"], color=Theme.main(), alpha=0.7)
-    plt.tick_params(axis='x', rotation=45)
+    sns.barplot(data=df, x="class", y="count", order=df["class"], color=Theme.main(), alpha=0.7)
+    plt.xticks(rotation=45)
 
     plt.margins(y=0.15)
     for i, (c, p) in enumerate(zip(df["count"], df["percentage"])):

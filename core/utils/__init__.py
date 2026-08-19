@@ -1,3 +1,3 @@
 from .distances import *
-from .entropy import *
+from .impurity import *
 from .probability import *

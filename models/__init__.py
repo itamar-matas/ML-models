@@ -1,4 +1,4 @@
 from .knn import KNNClassifier
-from .decisiontree import DecisionTreeClassifier
+from .decisiontree import ID3_DecisionTreeClassifier, CART_DecisionTreeClassifier
 from .naivebayes import NaiveBayesClassifier
 from .logisticregression import LogisticRegressionClassifier
