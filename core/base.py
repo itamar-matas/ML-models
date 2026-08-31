@@ -75,7 +75,7 @@ class ClassifierScoreMixin:
 #                                               OPTIMIZERS                                                  
 # ======================================================================================================
 
-class BaseOptimizer(ABC):
+class BaseOptimizer(BaseEstimator):
     @abstractmethod
     def __init__(self, theta0: np.ndarray, learning_rate: int = 0.01, **kwargs) -> None: ...
 
