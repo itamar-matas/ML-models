@@ -82,8 +82,7 @@ print(f"F1-score: {results['f1']}")
 
 ## Benchmarks
 
-## Benchmarks
-
+```text
 The implementations were evaluated on several datasets using different models and preprocessing configurations.
 
 | Dataset   | Model               | Configuration                | Result          |
@@ -94,15 +93,18 @@ The implementations were evaluated on several datasets using different models an
 | Mushrooms | Naive Bayes         | —                            | 95.41% accuracy |
 | Digits    | Logistic Regression | GridSearchCV, F1             | 94.45% F1       |
 | Digits    | Decision Tree       | CART, max_depth, gini        | 85.74% accuracy |
+```
 
 ### Decision Tree vs. scikit-learn
 
 On the Digits dataset, the custom Decision Tree implementation was compared against the corresponding scikit-learn implementation under the same benchmark setup.
 
+```text
 | Implementation      | Train Accuracy | Test Accuracy | Fit Time |
 |                     |                |               |          |
 | This implementation | 100.00%        | 85.74%        | 1.3295 s |
 | scikit-learn        | 100.00%        | 86.59%        | 0.0544 s |
+```
 
 The benchmark demonstrates comparable predictive performance while also providing a reference point for computational performance.
 
