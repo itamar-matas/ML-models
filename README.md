@@ -82,9 +82,9 @@ print(f"F1-score: {results['f1']}")
 
 ## Benchmarks
 
-```text
 The implementations were evaluated on several datasets using different models and preprocessing configurations.
 
+```text
 | Dataset   | Model               | Configuration                | Result          |
 |           |                     |                              |                 |
 | Iris      | KNN                 | K = 5                        | 96.19% accuracy |
